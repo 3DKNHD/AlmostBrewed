@@ -8,6 +8,23 @@ const state = {
   navOpen: false,
 };
 
+function narrowScreen() {
+  return window.matchMedia("(max-width: 800px)").matches;
+}
+
+function storedNavOpen() {
+  try {
+    const stored = localStorage.getItem("nav");
+    if (stored === "open") return true;
+    if (stored === "closed") return false;
+  } catch (error) {
+    return !narrowScreen();
+  }
+  return !narrowScreen();
+}
+
+state.navOpen = storedNavOpen();
+
 const app = document.querySelector("#app");
 
 function esc(value) {
@@ -84,10 +101,20 @@ function chooseTheme(theme) {
 
 function setNav(open) {
   state.navOpen = open;
+  try {
+    localStorage.setItem("nav", open ? "open" : "closed");
+  } catch (error) {
+    /* the menu still toggles for this visit */
+  }
   const shell = app.querySelector(".shell");
-  const toggle = app.querySelector("[data-nav-toggle]");
   if (shell) shell.classList.toggle("nav-open", open);
-  if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  const sidebar = app.querySelector(".sidebar");
+  const slot = app.querySelector(".nav-slot");
+  if (sidebar) sidebar.toggleAttribute("inert", !open);
+  if (slot) slot.toggleAttribute("inert", open);
+  app.querySelectorAll("[data-nav-toggle]").forEach((toggle) => {
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
 }
 
 const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
@@ -221,10 +248,11 @@ function renderSidebar() {
     }).join("");
     return '<p class="track-title">' + esc(track.title) + "</p>" + topics;
   }).join("");
-  return '<aside class="sidebar"><p class="brand">' + esc(state.course.title) + "</p>" +
+  return '<aside class="sidebar"' + (state.navOpen ? "" : " inert") + '><div class="sidebar-body"><div class="sidebar-top"><p class="brand">' + esc(state.course.title) + "</p>" +
+    '<button type="button" class="nav-hide" data-nav-toggle aria-label="Cerrar menú"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3.2 3.2l9.6 9.6M12.8 3.2L3.2 12.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>' +
     '<p class="tagline">' + esc(state.course.tagline) + "</p>" +
     themeControl() +
-    '<button class="home-btn" data-home="1">Inicio</button><nav>' + blocks + "</nav></aside>";
+    '<button class="home-btn" data-home="1">Inicio</button><nav>' + blocks + "</nav></div></aside>";
 }
 
 function renderHome() {
@@ -299,6 +327,26 @@ function renderExercise(exercise) {
     '<div class="result"></div><div class="solution"></div></article>';
 }
 
+function flatTopics() {
+  const tracks = (state.outline && state.outline.tracks) || [];
+  return tracks.flatMap((track) => track.topics);
+}
+
+function renderTopicSwitch() {
+  const list = flatTopics();
+  const index = list.findIndex((topic) => topic.folder === state.topic.folder);
+  if (index < 0) return "";
+  const prev = list[index - 1];
+  const next = list[index + 1];
+  const prevHtml = prev
+    ? '<button type="button" class="topic-step" data-topic="' + esc(prev.folder) + '"><span class="step-label">Anterior</span><span class="step-title">' + esc(prev.title) + "</span></button>"
+    : "<span></span>";
+  const nextHtml = next
+    ? '<button type="button" class="topic-step next" data-topic="' + esc(next.folder) + '"><span class="step-label">Siguiente</span><span class="step-title">' + esc(next.title) + "</span></button>"
+    : "<span></span>";
+  return '<nav class="topic-switch" aria-label="Cambiar de tema">' + prevHtml + nextHtml + "</nav>";
+}
+
 function renderTopic() {
   const topic = state.topic;
   const objectives = (topic.objectives || []).map((item) => "<li>" + esc(item) + "</li>").join("");
@@ -309,7 +357,8 @@ function renderTopic() {
   return '<header class="page-head"><h1>' + esc(topic.title) + "</h1>" +
     '<p class="track-name">' + esc(trackTitle(topic.track)) + "</p></header>" +
     '<ul class="objectives reading">' + objectives + "</ul>" +
-    '<div class="guide reading">' + renderMarkdown(topic.guide || "") + example + "</div>" + exercises;
+    '<div class="guide reading">' + renderMarkdown(topic.guide || "") + example + "</div>" + exercises +
+    renderTopicSwitch();
 }
 
 function render() {
@@ -317,9 +366,10 @@ function render() {
   const main = state.topic ? renderTopic() : renderHome();
   const open = state.navOpen ? " nav-open" : "";
   app.innerHTML = '<div class="shell' + open + '">' + renderSidebar() +
+    '<div class="nav-slot"' + (state.navOpen ? " inert" : "") + '><button type="button" class="nav-toggle" data-nav-toggle aria-expanded="' +
+    (state.navOpen ? "true" : "false") + '">Temas</button></div>' +
     '<button type="button" class="scrim" data-nav-close aria-label="Cerrar temas"></button>' +
-    '<main class="main"><button type="button" class="nav-toggle" data-nav-toggle aria-expanded="' +
-    (state.navOpen ? "true" : "false") + '">Temas</button>' + main + "</main></div>";
+    '<main class="main">' + main + "</main></div>";
   bind();
   if (state.topic) refreshUmlLists();
 }
@@ -327,10 +377,11 @@ function render() {
 function bind() {
   app.querySelectorAll("[data-home]").forEach((node) => node.addEventListener("click", () => {
     state.topic = null;
+    if (narrowScreen()) state.navOpen = false;
     render();
   }));
   app.querySelectorAll("[data-topic]").forEach((node) => node.addEventListener("click", () => {
-    state.navOpen = false;
+    if (narrowScreen()) state.navOpen = false;
     openTopic(node.dataset.topic);
   }));
   app.querySelectorAll("[data-nav-toggle]").forEach((node) => node.addEventListener("click", () => setNav(!state.navOpen)));
@@ -383,14 +434,15 @@ function updateSidebar() {
   current.replaceWith(holder.content.firstElementChild);
   app.querySelectorAll("[data-home]").forEach((node) => node.addEventListener("click", () => {
     state.topic = null;
-    state.navOpen = false;
+    if (narrowScreen()) state.navOpen = false;
     render();
   }));
   app.querySelectorAll(".sidebar [data-topic]").forEach((node) => node.addEventListener("click", () => {
-    state.navOpen = false;
+    if (narrowScreen()) state.navOpen = false;
     openTopic(node.dataset.topic);
   }));
   app.querySelectorAll(".sidebar [data-theme-choice]").forEach((node) => node.addEventListener("click", () => chooseTheme(node.dataset.themeChoice)));
+  app.querySelectorAll(".sidebar [data-nav-toggle]").forEach((node) => node.addEventListener("click", () => setNav(!state.navOpen)));
 }
 
 function markExerciseDone(folder) {
