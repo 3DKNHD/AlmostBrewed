@@ -5,6 +5,7 @@ const state = {
   topic: null,
   tab: {},
   uml: {},
+  navOpen: false,
 };
 
 const app = document.querySelector("#app");
@@ -44,6 +45,57 @@ function saveDraft(topic, exercise, filename, value) {
 function doneSet() {
   return new Set(state.progress.done || []);
 }
+
+function kindLabel(type) {
+  if (type === "quiz") return "Pregunta";
+  if (type === "uml") return "Diagrama";
+  return "Código";
+}
+
+function nextTopic() {
+  const tracks = (state.outline && state.outline.tracks) || [];
+  for (const track of tracks) {
+    for (const topic of track.topics) {
+      if (topic.done < topic.total) return topic;
+    }
+  }
+  return null;
+}
+
+function themeControl() {
+  const current = document.documentElement.dataset.theme || "system";
+  const options = [["light", "Claro"], ["dark", "Oscuro"], ["system", "Sistema"]];
+  return '<div class="theme" role="group" aria-label="Tema">' + options.map((option) => {
+    const active = option[0] === current ? " active" : "";
+    const pressed = option[0] === current ? "true" : "false";
+    return '<button type="button" class="theme-btn' + active + '" data-theme-choice="' + option[0] + '" aria-pressed="' + pressed + '">' + option[1] + "</button>";
+  }).join("") + "</div>";
+}
+
+function chooseTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem("theme", theme);
+  app.querySelectorAll("[data-theme-choice]").forEach((node) => {
+    const on = node.dataset.themeChoice === theme;
+    node.classList.toggle("active", on);
+    node.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+
+function setNav(open) {
+  state.navOpen = open;
+  const shell = app.querySelector(".shell");
+  const toggle = app.querySelector("[data-nav-toggle]");
+  if (shell) shell.classList.toggle("nav-open", open);
+  if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+}
+
+const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+function syncSystemTheme() {
+  document.documentElement.dataset.os = themeMedia.matches ? "dark" : "light";
+}
+themeMedia.addEventListener("change", syncSystemTheme);
+syncSystemTheme();
 
 function renderInline(text) {
   return esc(text)
@@ -163,62 +215,75 @@ function renderSidebar() {
   const blocks = tracks.map((track) => {
     const topics = track.topics.map((topic) => {
       const active = topic.folder === current ? " active" : "";
-      return '<button class="topic-btn' + active + '" data-topic="' + esc(topic.folder) + '">' +
-        "<span>" + esc(topic.title) + "</span><small>" + topic.done + "/" + topic.total + "</small></button>";
+      const currentAttr = topic.folder === current ? ' aria-current="page"' : "";
+      return '<button class="topic-btn' + active + '" data-topic="' + esc(topic.folder) + '"' + currentAttr + ">" +
+        '<span class="topic-name">' + esc(topic.title) + '</span><span class="tally">' + topic.done + "/" + topic.total + "</span></button>";
     }).join("");
     return '<p class="track-title">' + esc(track.title) + "</p>" + topics;
   }).join("");
-  return '<aside class="sidebar"><h1 class="brand">' + esc(state.course.title) + "</h1>" +
+  return '<aside class="sidebar"><p class="brand">' + esc(state.course.title) + "</p>" +
     '<p class="tagline">' + esc(state.course.tagline) + "</p>" +
-    '<button class="home-btn" data-home="1">Inicio</button>' + blocks + "</aside>";
+    themeControl() +
+    '<button class="home-btn" data-home="1">Inicio</button><nav>' + blocks + "</nav></aside>";
 }
 
 function renderHome() {
   const tracks = (state.outline && state.outline.tracks) || [];
-  const cards = tracks.map((track) => {
-    const topics = track.topics.map((topic) => "<li>" + esc(topic.title) + " · " + topic.done + "/" + topic.total + "</li>").join("");
-    return '<article class="card"><h2>' + esc(track.title) + "</h2><ul>" + topics + "</ul></article>";
+  const upcoming = nextTopic();
+  const next = upcoming
+    ? '<p class="next-step"><button class="primary" data-topic="' + esc(upcoming.folder) + '">Sigue con ' + esc(upcoming.title) + "</button></p>"
+    : '<p class="lede">No queda nada abierto.</p>';
+  const blocks = tracks.map((track) => {
+    const topics = track.topics.map((topic) =>
+      '<button class="topic-link" data-topic="' + esc(topic.folder) + '"><span>' + esc(topic.title) +
+      '</span><span class="tally">' + topic.done + "/" + topic.total + "</span></button>"
+    ).join("");
+    return '<section class="track-block"><h2>' + esc(track.title) + "</h2>" + topics + "</section>";
   }).join("");
-  return '<p class="kicker">Curso local</p><h2>Empieza por el primer tema, o salta si ya programas.</h2>' +
-    '<div class="card"><p>Lee la guía. Si hay un diagrama, léelo antes de escribir código. Intenta el ejercicio y pide la solución después, no antes.</p>' +
-    "<p>Los de consola se comprueban solos. Los de ventana se abren en el escritorio: la página te dice qué pulsar.</p></div>" + cards;
+  return '<header class="page-head"><h1>' + esc(state.course.title) + "</h1>" +
+    '<p class="lede">' + esc(state.course.tagline) + "</p></header>" + next +
+    '<div class="reading"><p>Lee la guía. Si hay un diagrama, léelo antes de escribir código. Intenta el ejercicio y pide la solución después, no antes.</p>' +
+    "<p>Los de consola se comprueban solos. Los de ventana se abren en el escritorio: la página te dice qué pulsar.</p></div>" + blocks;
 }
 
 function fileTabs(exercise) {
   const names = Object.keys(exercise.files);
   if (names.length <= 1) return "";
   const current = state.tab[exercise.folder] || names[0];
-  return '<div class="tabs">' + names.map((name) => {
+  return '<div class="tabs" role="tablist">' + names.map((name) => {
     const active = name === current ? " active" : "";
-    return '<button class="tab' + active + '" data-tab="' + esc(exercise.folder) + '" data-file="' + esc(name) + '">' + esc(name) + "</button>";
+    const selected = name === current ? "true" : "false";
+    return '<button type="button" class="tab' + active + '" role="tab" aria-selected="' + selected + '" data-tab="' + esc(exercise.folder) + '" data-file="' + esc(name) + '">' + esc(name) + "</button>";
   }).join("") + "</div>";
 }
 
 function renderExercise(exercise) {
-  const head = '<div class="exercise-head"><h3>' + esc(exercise.title) + '</h3><span class="stamp">' + esc(exercise.type) + "</span></div>";
-  const statement = '<div class="guide">' + renderMarkdown(exercise.statement || "") + "</div>";
+  const done = doneSet().has(exercise.id) ? '<span class="done-mark">Hecho</span>' : "";
+  const head = '<div class="exercise-head"><h2>' + esc(exercise.title) + '</h2><p class="meta"><span>' +
+    esc(kindLabel(exercise.type)) + "</span>" + done + "</p></div>";
+  const statement = '<div class="guide reading">' + renderMarkdown(exercise.statement || "") + "</div>";
   if (exercise.type === "quiz") {
     const choices = (exercise.choices || []).map((choice, index) =>
       '<li><label><input type="radio" name="quiz-' + esc(exercise.folder) + '" value="' + index + '"> ' + esc(choice) + "</label></li>"
     ).join("");
     const question = exercise.question ? "<p><strong>" + esc(exercise.question) + "</strong></p>" : "";
-    return '<article class="card" data-exercise="' + esc(exercise.folder) + '">' + head + statement + question +
+    return '<article class="exercise" data-exercise="' + esc(exercise.folder) + '">' + head + statement + question +
       '<ul class="choices">' + choices + '</ul><div class="row"><button class="primary" data-quiz="' + esc(exercise.folder) + '">Comprobar</button></div><div class="result"></div></article>';
   }
   if (exercise.type === "uml") {
-    return '<article class="card" data-exercise="' + esc(exercise.folder) + '">' + head + statement +
-      '<div class="uml-form"><input data-class-input="' + esc(exercise.folder) + '" placeholder="Nombre de la clase">' +
+    return '<article class="exercise" data-exercise="' + esc(exercise.folder) + '">' + head + statement +
+      '<div class="uml-form"><input data-class-input="' + esc(exercise.folder) + '" placeholder="Nombre de la clase" aria-label="Nombre de la clase">' +
       '<button class="ghost" data-add-class="' + esc(exercise.folder) + '">Agregar clase</button></div>' +
       '<ul class="chips" data-classes="' + esc(exercise.folder) + '"></ul>' +
-      '<div class="rel-row"><select data-from="' + esc(exercise.folder) + '"></select>' +
-      '<select data-kind="' + esc(exercise.folder) + '">' +
+      '<div class="rel-row"><select data-from="' + esc(exercise.folder) + '" aria-label="Clase de origen"></select>' +
+      '<select data-kind="' + esc(exercise.folder) + '" aria-label="Tipo de relación">' +
       '<option value="association">asociación</option><option value="aggregation">agregación</option>' +
       '<option value="composition">composición</option><option value="generalization">generalización</option>' +
       '<option value="realization">realización</option></select>' +
-      '<select data-to="' + esc(exercise.folder) + '"></select>' +
+      '<select data-to="' + esc(exercise.folder) + '" aria-label="Clase de destino"></select>' +
       '<button class="ghost" data-add-rel="' + esc(exercise.folder) + '">Agregar relación</button></div>' +
       '<ul class="rel-list" data-rels="' + esc(exercise.folder) + '"></ul>' +
-      '<p class="tagline">En generalización y realización, el origen es la clase general o la interfaz, y el destino es la específica.</p>' +
+      '<p class="hint">En generalización y realización, el origen es la clase general o la interfaz, y el destino es la específica.</p>' +
       '<div class="row"><button class="primary" data-uml="' + esc(exercise.folder) + '">Comprobar</button></div><div class="result"></div></article>';
   }
   const names = Object.keys(exercise.files);
@@ -226,9 +291,9 @@ function renderExercise(exercise) {
   const editors = names.map((name) => {
     const value = loadDraft(state.topic.folder, exercise.folder, name, exercise.files[name]);
     const hidden = name === current ? "" : " hidden";
-    return '<textarea data-editor="' + esc(exercise.folder) + '" data-file="' + esc(name) + '" class="' + hidden.trim() + '">' + esc(value) + "</textarea>";
+    return '<textarea data-editor="' + esc(exercise.folder) + '" data-file="' + esc(name) + '"' + hidden + ' spellcheck="false" aria-label="' + esc(name) + '">' + esc(value) + "</textarea>";
   }).join("");
-  return '<article class="card" data-exercise="' + esc(exercise.folder) + '">' + head + statement + fileTabs(exercise) + editors +
+  return '<article class="exercise" data-exercise="' + esc(exercise.folder) + '">' + head + statement + fileTabs(exercise) + editors +
     '<div class="row"><button class="primary" data-run="' + esc(exercise.folder) + '">Compilar y correr</button>' +
     '<button class="ghost" data-solution="' + esc(exercise.folder) + '">Ver solución</button></div>' +
     '<div class="result"></div><div class="solution"></div></article>';
@@ -241,15 +306,20 @@ function renderTopic() {
     ? '<div class="row"><button class="ghost" data-example="1">Correr el ejemplo</button></div><div id="example-result"></div>'
     : "";
   const exercises = topic.exercises.map(renderExercise).join("");
-  return '<p class="kicker">' + esc(trackTitle(topic.track)) + "</p><h2>" + esc(topic.title) + "</h2>" +
-    '<div class="card"><ul class="objectives">' + objectives + "</ul></div>" +
-    '<div class="card guide">' + renderMarkdown(topic.guide || "") + example + "</div>" + exercises;
+  return '<header class="page-head"><h1>' + esc(topic.title) + "</h1>" +
+    '<p class="track-name">' + esc(trackTitle(topic.track)) + "</p></header>" +
+    '<ul class="objectives reading">' + objectives + "</ul>" +
+    '<div class="guide reading">' + renderMarkdown(topic.guide || "") + example + "</div>" + exercises;
 }
 
 function render() {
   document.title = state.course.title;
   const main = state.topic ? renderTopic() : renderHome();
-  app.innerHTML = '<div class="shell">' + renderSidebar() + '<main class="main">' + main + "</main></div>";
+  const open = state.navOpen ? " nav-open" : "";
+  app.innerHTML = '<div class="shell' + open + '">' + renderSidebar() +
+    '<button type="button" class="scrim" data-nav-close aria-label="Cerrar temas"></button>' +
+    '<main class="main"><button type="button" class="nav-toggle" data-nav-toggle aria-expanded="' +
+    (state.navOpen ? "true" : "false") + '">Temas</button>' + main + "</main></div>";
   bind();
   if (state.topic) refreshUmlLists();
 }
@@ -259,10 +329,26 @@ function bind() {
     state.topic = null;
     render();
   }));
-  app.querySelectorAll("[data-topic]").forEach((node) => node.addEventListener("click", () => openTopic(node.dataset.topic)));
+  app.querySelectorAll("[data-topic]").forEach((node) => node.addEventListener("click", () => {
+    state.navOpen = false;
+    openTopic(node.dataset.topic);
+  }));
+  app.querySelectorAll("[data-nav-toggle]").forEach((node) => node.addEventListener("click", () => setNav(!state.navOpen)));
+  app.querySelectorAll("[data-nav-close]").forEach((node) => node.addEventListener("click", () => setNav(false)));
+  app.querySelectorAll("[data-theme-choice]").forEach((node) => node.addEventListener("click", () => chooseTheme(node.dataset.themeChoice)));
   app.querySelectorAll("[data-tab]").forEach((node) => node.addEventListener("click", () => {
-    state.tab[node.dataset.tab] = node.dataset.file;
-    render();
+    const folder = node.dataset.tab;
+    const file = node.dataset.file;
+    state.tab[folder] = file;
+    const article = exerciseNode(folder);
+    article.querySelectorAll("[data-tab]").forEach((tab) => {
+      const on = tab.dataset.file === file;
+      tab.classList.toggle("active", on);
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    article.querySelectorAll("[data-editor]").forEach((editor) => {
+      editor.hidden = editor.dataset.file !== file;
+    });
   }));
   app.querySelectorAll("[data-editor]").forEach((node) => {
     node.addEventListener("input", () => saveDraft(state.topic.folder, node.dataset.editor, node.dataset.file, node.value));
@@ -297,9 +383,21 @@ function updateSidebar() {
   current.replaceWith(holder.content.firstElementChild);
   app.querySelectorAll("[data-home]").forEach((node) => node.addEventListener("click", () => {
     state.topic = null;
+    state.navOpen = false;
     render();
   }));
-  app.querySelectorAll(".sidebar [data-topic]").forEach((node) => node.addEventListener("click", () => openTopic(node.dataset.topic)));
+  app.querySelectorAll(".sidebar [data-topic]").forEach((node) => node.addEventListener("click", () => {
+    state.navOpen = false;
+    openTopic(node.dataset.topic);
+  }));
+  app.querySelectorAll(".sidebar [data-theme-choice]").forEach((node) => node.addEventListener("click", () => chooseTheme(node.dataset.themeChoice)));
+}
+
+function markExerciseDone(folder) {
+  const meta = exerciseNode(folder).querySelector(".meta");
+  if (meta && !meta.querySelector(".done-mark")) {
+    meta.insertAdjacentHTML("beforeend", '<span class="done-mark">Hecho</span>');
+  }
 }
 
 function exerciseNode(folder) {
@@ -370,12 +468,14 @@ async function runExercise(folder) {
         await api("/api/progress", { id: exercise.id });
         await refreshOutline();
         updateSidebar();
+        markExerciseDone(folder);
         showResult(folder, '<div class="ok">Quedó marcado. La ventana no se comprueba sola: tú viste si cumplía.</div>');
       });
     }
     if (result.passed && !result.window) {
       await refreshOutline();
       updateSidebar();
+      markExerciseDone(folder);
     }
   } catch (error) {
     showResult(folder, '<div class="bad">' + esc(error.message) + "</div>");
@@ -403,6 +503,7 @@ async function gradeQuiz(folder) {
   if (result.passed) {
     await refreshOutline();
     updateSidebar();
+    markExerciseDone(folder);
   }
 }
 
@@ -451,6 +552,7 @@ async function gradeUml(folder) {
     showResult(folder, '<div class="ok">El diagrama coincide.</div>');
     await refreshOutline();
     updateSidebar();
+    markExerciseDone(folder);
     return;
   }
   showResult(folder, '<div class="bad">' + esc((result.notes || []).join(" ")) + "</div>");
@@ -476,5 +578,9 @@ async function boot() {
     app.innerHTML = '<main class="main"><div class="bad">' + esc(error.message) + "</div></main>";
   }
 }
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setNav(false);
+});
 
 boot();
