@@ -1,1 +1,1 @@
-Imprime dos líneas, en este orden: `Universidad de Holguín` y después `Programación 2`.
+Imprime dos líneas, en este orden: `Java` y después `desde cero`.
