@@ -1,0 +1,6 @@
+{
+  "id": "exam-a-listo",
+  "title": "El botón cambia la etiqueta",
+  "type": "window",
+  "main": "Listo"
+}

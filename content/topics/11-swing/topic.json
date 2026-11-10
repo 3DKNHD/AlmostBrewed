@@ -1,0 +1,12 @@
+{
+  "id": "11-swing",
+  "title": "Pantallas",
+  "summary": "Swing: la ventana llama al modelo.",
+  "track": "poo",
+  "objectives": [
+    "Armar una ventana con botón, campo y etiqueta.",
+    "Atender el clic con ActionListener, que es una interfaz.",
+    "Dejar la regla de negocio en el modelo, no en el botón."
+  ],
+  "exampleWindow": true
+}

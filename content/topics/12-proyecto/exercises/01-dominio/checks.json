@@ -1,0 +1,11 @@
+{
+  "cases": [
+    {
+      "stdin": "",
+      "stdout": "prestado a Ana\n",
+      "files": {
+        "catalogo.txt": "El Quijote\n"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Una `Clinica` se compone de `Consulta`. Un `Medico` está asociado a la consulta: no forma parte de ella. Modela las tres clases. Composición de clínica hacia consulta. Asociación de consulta hacia médico.

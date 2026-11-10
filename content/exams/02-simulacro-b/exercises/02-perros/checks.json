@@ -1,0 +1,13 @@
+{
+  "classes": [
+    "Animal",
+    "Perro"
+  ],
+  "relations": [
+    {
+      "from": "Animal",
+      "to": "Perro",
+      "kind": "generalization"
+    }
+  ]
+}

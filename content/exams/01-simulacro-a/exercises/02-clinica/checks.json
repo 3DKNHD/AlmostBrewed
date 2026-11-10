@@ -1,0 +1,19 @@
+{
+  "classes": [
+    "Clinica",
+    "Consulta",
+    "Medico"
+  ],
+  "relations": [
+    {
+      "from": "Clinica",
+      "to": "Consulta",
+      "kind": "composition"
+    },
+    {
+      "from": "Consulta",
+      "to": "Medico",
+      "kind": "association"
+    }
+  ]
+}

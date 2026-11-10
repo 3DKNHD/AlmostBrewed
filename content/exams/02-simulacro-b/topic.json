@@ -1,0 +1,11 @@
+{
+  "id": "02-simulacro-b",
+  "title": "Simulacro B",
+  "summary": "Herencia, interfaz, lista y ventana.",
+  "track": "exam",
+  "objectives": [
+    "Elegir herencia o interfaz con una frase.",
+    "Escribir el método que realmente se ejecuta."
+  ],
+  "exampleWindow": false
+}

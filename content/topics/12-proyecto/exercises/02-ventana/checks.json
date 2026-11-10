@@ -1,0 +1,8 @@
+{
+  "steps": [
+    "Escribe Cecilia en el campo.",
+    "Pulsa Agregar.",
+    "El área debe mostrar Cecilia.",
+    "El campo debe quedar vacío."
+  ]
+}

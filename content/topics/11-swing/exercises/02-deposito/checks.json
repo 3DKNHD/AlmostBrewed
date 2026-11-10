@@ -1,0 +1,8 @@
+{
+  "steps": [
+    "Escribe 50 en el campo.",
+    "Pulsa Depositar.",
+    "La etiqueta debe decir 50.",
+    "Deposita 20 más y debe decir 70."
+  ]
+}

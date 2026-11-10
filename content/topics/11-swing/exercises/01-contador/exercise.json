@@ -1,0 +1,6 @@
+{
+  "id": "11-contador",
+  "title": "Un botón que cuenta",
+  "type": "window",
+  "main": "Contador"
+}

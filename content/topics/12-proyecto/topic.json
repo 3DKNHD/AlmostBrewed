@@ -1,0 +1,12 @@
+{
+  "id": "12-proyecto",
+  "title": "Proyecto integrador",
+  "summary": "Diagrama, modelo, fichero y ventana.",
+  "track": "poo",
+  "objectives": [
+    "Modelar antes de codear.",
+    "Implementar una interfaz en el dominio.",
+    "Separar el modelo de la pantalla."
+  ],
+  "exampleWindow": false
+}

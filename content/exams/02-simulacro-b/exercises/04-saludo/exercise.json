@@ -1,0 +1,6 @@
+{
+  "id": "exam-b-saludo",
+  "title": "Saludar con el nombre",
+  "type": "window",
+  "main": "Saludo"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "01-simulacro-a",
+  "title": "Simulacro A",
+  "summary": "Teoría, diagrama, una clase y una ventana.",
+  "track": "exam",
+  "objectives": [
+    "Responder sin mirar la guía.",
+    "Dibujar el diagrama antes del código."
+  ],
+  "exampleWindow": false
+}

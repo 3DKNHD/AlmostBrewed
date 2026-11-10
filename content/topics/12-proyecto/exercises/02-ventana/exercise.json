@@ -1,0 +1,6 @@
+{
+  "id": "12-ventana",
+  "title": "Agregar desde la ventana",
+  "type": "window",
+  "main": "Ventana"
+}

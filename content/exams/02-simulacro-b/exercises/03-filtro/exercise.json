@@ -1,0 +1,6 @@
+{
+  "id": "exam-b-filtro",
+  "title": "Solo los mayores de edad",
+  "type": "code",
+  "main": "Mayores"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "exam-b-teoria",
+  "title": "Herencia o interfaz",
+  "type": "quiz",
+  "question": "Correo y Sms no comparten campos, pero los dos saben enviar. ¿Qué relación usas?",
+  "choices": [
+    "Herencia desde una clase CorreoBase con el texto guardado",
+    "Una interfaz que ambos implementan",
+    "Composición",
+    "Agregación"
+  ],
+  "answer": 1,
+  "explain": "No hay estado común que proteger. El contrato es enviar. Una interfaz lo dice, y deja a cada clase libre de extender otra familia si hace falta."
+}

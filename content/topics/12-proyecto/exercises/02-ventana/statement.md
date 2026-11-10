@@ -1,0 +1,1 @@
+El modelo ya está en `fixed` y no sale en el editor. Escribe la ventana: un campo, un botón `Agregar` y un área de texto. Al pulsar, se crea un `Libro`, se agrega a la `Biblioteca` y el título aparece en el área.

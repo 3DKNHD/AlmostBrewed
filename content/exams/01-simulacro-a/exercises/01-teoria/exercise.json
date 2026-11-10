@@ -1,0 +1,14 @@
+{
+  "id": "exam-a-teoria",
+  "title": "Interfaz y clase abstracta",
+  "type": "quiz",
+  "question": "¿Cuál frase es la correcta para este curso?",
+  "choices": [
+    "La interfaz tiene campos privados y la clase abstracta no",
+    "La clase abstracta puede tener estado; la interfaz es un contrato y una clase puede implementar varias",
+    "Solo se puede implementar una interfaz",
+    "Una clase abstracta se instancia con new si tiene constructor"
+  ],
+  "answer": 1,
+  "explain": "La clase abstracta es una familia y puede guardar campos. La interfaz es un contrato. Una clase extiende una sola clase e implementa varias interfaces. De la clase abstracta no se hace new."
+}
