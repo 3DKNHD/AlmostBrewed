@@ -493,6 +493,12 @@ pre {
 
 textarea[hidden] { display: none; }
 
+.editor-tools { margin: 0.7rem 0 0.2rem; }
+
+.file-input { display: none; }
+
+.editor-note { color: var(--bad-fg); margin: 0.2rem 0 0.45rem; }
+
 textarea {
   width: 100%;
   min-height: 16rem;

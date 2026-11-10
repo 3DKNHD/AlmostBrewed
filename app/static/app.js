@@ -59,6 +59,84 @@ function saveDraft(topic, exercise, filename, value) {
   localStorage.setItem(draftKey(topic, exercise, filename), value);
 }
 
+function selectEditorFile(folder, filename) {
+  state.tab[folder] = filename;
+  const article = exerciseNode(folder);
+  article.querySelectorAll("[data-tab]").forEach((tab) => {
+    const on = tab.dataset.file === filename;
+    tab.classList.toggle("active", on);
+    tab.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  article.querySelectorAll("[data-editor]").forEach((editor) => {
+    editor.hidden = editor.dataset.file !== filename;
+  });
+}
+
+function visibleEditor(folder) {
+  const article = exerciseNode(folder);
+  return [...article.querySelectorAll("[data-editor]")].find((node) => !node.hidden) || article.querySelector("[data-editor]");
+}
+
+function writeEditor(node, text) {
+  node.value = text.replace(/\r\n/g, "\n");
+  saveDraft(state.topic.folder, node.dataset.editor, node.dataset.file, node.value);
+}
+
+function editorNote(folder, message) {
+  const note = exerciseNode(folder).querySelector("[data-editor-note]");
+  if (!note) return;
+  note.hidden = !message;
+  note.textContent = message || "";
+}
+
+async function loadJavaFiles(folder, fileList) {
+  const editors = [...exerciseNode(folder).querySelectorAll("[data-editor]")];
+  const byName = new Map(editors.map((node) => [node.dataset.file.toLowerCase(), node]));
+  let shown = null;
+  let rejected = false;
+  for (const file of fileList) {
+    if (!file.name.toLowerCase().endsWith(".java")) {
+      rejected = true;
+      continue;
+    }
+    const named = byName.get(file.name.toLowerCase());
+    const target = named || (fileList.length === 1 ? (visibleEditor(folder) || editors[0]) : null);
+    if (!target) {
+      rejected = true;
+      continue;
+    }
+    writeEditor(target, await file.text());
+    shown = target;
+  }
+  if (shown) selectEditorFile(folder, shown.dataset.file);
+  if (!shown && editors.length > 1) {
+    editorNote(folder, "Este ejercicio espera " + editors.map((node) => node.dataset.file).join(", ") + ".");
+  } else if (!shown && rejected) {
+    editorNote(folder, "Solo se cargan archivos .java.");
+  } else {
+    editorNote(folder, "");
+  }
+}
+
+async function pasteIntoEditor(folder) {
+  const editor = visibleEditor(folder);
+  if (!editor) return;
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) {
+      editor.focus();
+      editorNote(folder, "El portapapeles está vacío.");
+      return;
+    }
+    writeEditor(editor, text);
+    editorNote(folder, "");
+    editor.focus();
+  } catch (error) {
+    editor.focus();
+    editorNote(folder, "No pude leer el portapapeles. Pega con Ctrl+V dentro del editor.");
+  }
+}
+
 function doneSet() {
   return new Set(state.progress.done || []);
 }
@@ -321,7 +399,12 @@ function renderExercise(exercise) {
     const hidden = name === current ? "" : " hidden";
     return '<textarea data-editor="' + esc(exercise.folder) + '" data-file="' + esc(name) + '"' + hidden + ' spellcheck="false" aria-label="' + esc(name) + '">' + esc(value) + "</textarea>";
   }).join("");
-  return '<article class="exercise" data-exercise="' + esc(exercise.folder) + '">' + head + statement + fileTabs(exercise) + editors +
+  const tools = '<div class="row editor-tools"><button type="button" class="ghost" data-upload="' + esc(exercise.folder) + '">Subir .java</button>' +
+    '<button type="button" class="ghost" data-paste="' + esc(exercise.folder) + '">Pegar código</button>' +
+    '<input class="file-input" data-file-input="' + esc(exercise.folder) + '" type="file" accept=".java,text/plain" multiple hidden></div>' +
+    '<p class="hint">Pega el código en el recuadro, o sube un .java de tu equipo.</p>' +
+    '<p class="editor-note" data-editor-note="' + esc(exercise.folder) + '" hidden></p>';
+  return '<article class="exercise" data-exercise="' + esc(exercise.folder) + '">' + head + statement + fileTabs(exercise) + tools + editors +
     '<div class="row"><button class="primary" data-run="' + esc(exercise.folder) + '">Compilar y correr</button>' +
     '<button class="ghost" data-solution="' + esc(exercise.folder) + '">Ver solución</button></div>' +
     '<div class="result"></div><div class="solution"></div></article>';
@@ -390,16 +473,7 @@ function bind() {
   app.querySelectorAll("[data-tab]").forEach((node) => node.addEventListener("click", () => {
     const folder = node.dataset.tab;
     const file = node.dataset.file;
-    state.tab[folder] = file;
-    const article = exerciseNode(folder);
-    article.querySelectorAll("[data-tab]").forEach((tab) => {
-      const on = tab.dataset.file === file;
-      tab.classList.toggle("active", on);
-      tab.setAttribute("aria-selected", on ? "true" : "false");
-    });
-    article.querySelectorAll("[data-editor]").forEach((editor) => {
-      editor.hidden = editor.dataset.file !== file;
-    });
+    selectEditorFile(folder, file);
   }));
   app.querySelectorAll("[data-editor]").forEach((node) => {
     node.addEventListener("input", () => saveDraft(state.topic.folder, node.dataset.editor, node.dataset.file, node.value));
@@ -415,7 +489,24 @@ function bind() {
         runExercise(node.dataset.editor);
       }
     });
+    node.addEventListener("dragover", (event) => {
+      if ([...event.dataTransfer.types].includes("Files")) event.preventDefault();
+    });
+    node.addEventListener("drop", (event) => {
+      if (!event.dataTransfer.files || !event.dataTransfer.files.length) return;
+      event.preventDefault();
+      loadJavaFiles(node.dataset.editor, event.dataTransfer.files);
+    });
   });
+  app.querySelectorAll("[data-upload]").forEach((node) => node.addEventListener("click", () => {
+    const input = exerciseNode(node.dataset.upload).querySelector("[data-file-input]");
+    input.value = "";
+    input.click();
+  }));
+  app.querySelectorAll("[data-file-input]").forEach((node) => node.addEventListener("change", () => {
+    if (node.files && node.files.length) loadJavaFiles(node.dataset.fileInput, node.files);
+  }));
+  app.querySelectorAll("[data-paste]").forEach((node) => node.addEventListener("click", () => pasteIntoEditor(node.dataset.paste)));
   app.querySelectorAll("[data-run]").forEach((node) => node.addEventListener("click", () => runExercise(node.dataset.run)));
   app.querySelectorAll("[data-solution]").forEach((node) => node.addEventListener("click", () => showSolution(node.dataset.solution)));
   app.querySelectorAll("[data-quiz]").forEach((node) => node.addEventListener("click", () => gradeQuiz(node.dataset.quiz)));
