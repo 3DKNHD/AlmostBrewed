@@ -59,6 +59,116 @@ function saveDraft(topic, exercise, filename, value) {
   localStorage.setItem(draftKey(topic, exercise, filename), value);
 }
 
+const JAVA_KEYWORDS = new Set("abstract assert break case catch class const continue default do else enum extends final finally for goto if implements import instanceof interface native new package private protected public return static strictfp super switch synchronized this throw throws transient try var volatile while yield record sealed permits when".split(" "));
+const JAVA_TYPES = new Set("boolean byte char double float int long short void".split(" "));
+const JAVA_LITERALS = new Set(["true", "false", "null"]);
+
+function javaSpan(kind, text) {
+  return '<span class="tok-' + kind + '">' + esc(text) + "</span>";
+}
+
+function highlightJava(source) {
+  let html = "";
+  let i = 0;
+  const n = source.length;
+  while (i < n) {
+    if (source.startsWith("/*", i)) {
+      const end = source.indexOf("*/", i + 2);
+      const j = end < 0 ? n : end + 2;
+      html += javaSpan("cmt", source.slice(i, j));
+      i = j;
+      continue;
+    }
+    if (source.startsWith("//", i)) {
+      const end = source.indexOf("\n", i);
+      const j = end < 0 ? n : end;
+      html += javaSpan("cmt", source.slice(i, j));
+      i = j;
+      continue;
+    }
+    if (source.startsWith('"""', i)) {
+      const end = source.indexOf('"""', i + 3);
+      const j = end < 0 ? n : end + 3;
+      html += javaSpan("str", source.slice(i, j));
+      i = j;
+      continue;
+    }
+    const quote = source[i];
+    if (quote === '"' || quote === "'") {
+      let j = i + 1;
+      while (j < n && source[j] !== "\n") {
+        if (source[j] === "\\") {
+          j += 2;
+          continue;
+        }
+        if (source[j] === quote) {
+          j += 1;
+          break;
+        }
+        j += 1;
+      }
+      html += javaSpan("str", source.slice(i, j));
+      i = j;
+      continue;
+    }
+    if (/[0-9]/.test(source[i]) && (i === 0 || !/[\w$]/.test(source[i - 1]))) {
+      let j = i;
+      if (source.startsWith("0x", i) || source.startsWith("0X", i)) {
+        j = i + 2;
+        while (j < n && /[0-9a-fA-F_]/.test(source[j])) j += 1;
+      } else {
+        while (j < n && /[0-9_]/.test(source[j])) j += 1;
+        if (source[j] === "." && /[0-9]/.test(source[j + 1] || "")) {
+          j += 1;
+          while (j < n && /[0-9_]/.test(source[j])) j += 1;
+        }
+      }
+      if (/[fFdDlL]/.test(source[j] || "")) j += 1;
+      html += javaSpan("num", source.slice(i, j));
+      i = j;
+      continue;
+    }
+    if (source[i] === "@" && /[A-Za-z_]/.test(source[i + 1] || "")) {
+      let j = i + 1;
+      while (j < n && /[\w$]/.test(source[j])) j += 1;
+      html += javaSpan("type", source.slice(i, j));
+      i = j;
+      continue;
+    }
+    if (/[A-Za-z_$]/.test(source[i])) {
+      let j = i + 1;
+      while (j < n && /[\w$]/.test(source[j])) j += 1;
+      const word = source.slice(i, j);
+      let k = j;
+      while (k < n && (source[k] === " " || source[k] === "\t")) k += 1;
+      const kind = JAVA_KEYWORDS.has(word) ? "kw"
+        : JAVA_TYPES.has(word) || /^[A-Z]/.test(word) ? "type"
+        : JAVA_LITERALS.has(word) ? "num"
+        : source[k] === "(" ? "fn"
+        : "";
+      html += kind ? javaSpan(kind, word) : esc(word);
+      i = j;
+      continue;
+    }
+    html += esc(source[i]);
+    i += 1;
+  }
+  return html;
+}
+
+function syncEditorScroll(node) {
+  const pre = node.parentElement && node.parentElement.querySelector(".code-highlight");
+  if (!pre) return;
+  pre.scrollTop = node.scrollTop;
+  pre.scrollLeft = node.scrollLeft;
+}
+
+function paintEditor(node) {
+  const code = node.parentElement && node.parentElement.querySelector(".code-highlight code");
+  if (code) code.innerHTML = highlightJava(node.value) + "\n";
+  syncEditorScroll(node);
+}
+
 function selectEditorFile(folder, filename) {
   state.tab[folder] = filename;
   const article = exerciseNode(folder);
@@ -67,19 +177,21 @@ function selectEditorFile(folder, filename) {
     tab.classList.toggle("active", on);
     tab.setAttribute("aria-selected", on ? "true" : "false");
   });
-  article.querySelectorAll("[data-editor]").forEach((editor) => {
-    editor.hidden = editor.dataset.file !== filename;
+  article.querySelectorAll("[data-editor-wrap]").forEach((wrap) => {
+    wrap.hidden = wrap.dataset.file !== filename;
   });
 }
 
 function visibleEditor(folder) {
   const article = exerciseNode(folder);
-  return [...article.querySelectorAll("[data-editor]")].find((node) => !node.hidden) || article.querySelector("[data-editor]");
+  const wrap = [...article.querySelectorAll("[data-editor-wrap]")].find((node) => !node.hidden);
+  return (wrap && wrap.querySelector("[data-editor]")) || article.querySelector("[data-editor]");
 }
 
 function writeEditor(node, text) {
   node.value = text.replace(/\r\n/g, "\n");
   saveDraft(state.topic.folder, node.dataset.editor, node.dataset.file, node.value);
+  paintEditor(node);
 }
 
 function editorNote(folder, message) {
@@ -265,7 +377,7 @@ function renderMarkdown(source) {
         i += 1;
       }
       const text = body.join("\n");
-      html += lang === "uml" ? renderUml(text) : "<pre><code>" + esc(text) + "</code></pre>";
+      html += lang === "uml" ? renderUml(text) : "<pre><code>" + highlightJava(text) + "</code></pre>";
       i += 1;
       continue;
     }
@@ -397,7 +509,9 @@ function renderExercise(exercise) {
   const editors = names.map((name) => {
     const value = loadDraft(state.topic.folder, exercise.folder, name, exercise.files[name]);
     const hidden = name === current ? "" : " hidden";
-    return '<textarea data-editor="' + esc(exercise.folder) + '" data-file="' + esc(name) + '"' + hidden + ' spellcheck="false" aria-label="' + esc(name) + '">' + esc(value) + "</textarea>";
+    return '<div class="code-editor" data-editor-wrap="' + esc(exercise.folder) + '" data-file="' + esc(name) + '"' + hidden + '>' +
+      '<pre class="code-highlight" aria-hidden="true"><code>' + highlightJava(value) + '\n</code></pre>' +
+      '<textarea data-editor="' + esc(exercise.folder) + '" data-file="' + esc(name) + '" spellcheck="false" wrap="off" aria-label="' + esc(name) + '">' + esc(value) + "</textarea></div>";
   }).join("");
   const tools = '<div class="row editor-tools"><button type="button" class="ghost" data-upload="' + esc(exercise.folder) + '">Subir .java</button>' +
     '<button type="button" class="ghost" data-paste="' + esc(exercise.folder) + '">Pegar código</button>' +
@@ -476,7 +590,11 @@ function bind() {
     selectEditorFile(folder, file);
   }));
   app.querySelectorAll("[data-editor]").forEach((node) => {
-    node.addEventListener("input", () => saveDraft(state.topic.folder, node.dataset.editor, node.dataset.file, node.value));
+    node.addEventListener("input", () => {
+      saveDraft(state.topic.folder, node.dataset.editor, node.dataset.file, node.value);
+      paintEditor(node);
+    });
+    node.addEventListener("scroll", () => syncEditorScroll(node));
     node.addEventListener("keydown", (event) => {
       if (event.key === "Tab") {
         event.preventDefault();
@@ -484,6 +602,7 @@ function bind() {
         node.value = node.value.slice(0, start) + "    " + node.value.slice(node.selectionEnd);
         node.selectionStart = node.selectionEnd = start + 4;
         saveDraft(state.topic.folder, node.dataset.editor, node.dataset.file, node.value);
+        paintEditor(node);
       }
       if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
         runExercise(node.dataset.editor);
@@ -630,7 +749,7 @@ async function runExercise(folder) {
 
 async function showSolution(folder) {
   const data = await api("/api/solution", { topic: state.topic.folder, exercise: folder });
-  const blocks = Object.keys(data.files).map((name) => "<h3>" + esc(name) + "</h3><pre><code>" + esc(data.files[name]) + "</code></pre>").join("");
+  const blocks = Object.keys(data.files).map((name) => "<h3>" + esc(name) + "</h3><pre><code>" + highlightJava(data.files[name]) + "</code></pre>").join("");
   exerciseNode(folder).querySelector(".solution").innerHTML = blocks || "<p>Este ejercicio no tiene código de solución.</p>";
 }
 
