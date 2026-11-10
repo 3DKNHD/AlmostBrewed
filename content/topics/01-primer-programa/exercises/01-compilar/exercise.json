@@ -1,0 +1,14 @@
+{
+  "id": "01-compilar",
+  "title": "Compilar no es ejecutar",
+  "type": "quiz",
+  "question": "¿Qué produce javac a partir de Hola.java?",
+  "choices": [
+    "Un .exe listo para Windows",
+    "Un .class con bytecode",
+    "Otro .java más corto",
+    "Un .jar obligatorio"
+  ],
+  "answer": 1,
+  "explain": "javac traduce el fuente a bytecode y lo guarda en un .class. java es quien lo ejecuta. El .jar es un empaquetado posterior, no el resultado de compilar una clase suelta."
+}

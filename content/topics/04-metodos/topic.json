@@ -1,0 +1,12 @@
+{
+  "id": "04-metodos",
+  "title": "Métodos, arreglos y cadenas",
+  "summary": "Firma, retorno, arreglos de una dimensión y String.",
+  "track": "cero",
+  "objectives": [
+    "Escribir un método con parámetros y retorno.",
+    "Recorrer un arreglo desde el índice 0.",
+    "Recorrer un String con charAt."
+  ],
+  "exampleWindow": false
+}

@@ -1,0 +1,12 @@
+{
+  "id": "03-decisiones",
+  "title": "Decisiones y repetición",
+  "summary": "if, switch, while, for y Scanner.",
+  "track": "cero",
+  "objectives": [
+    "Elegir entre caminos con if.",
+    "Repetir con while y con for.",
+    "Leer enteros con Scanner."
+  ],
+  "exampleWindow": false
+}

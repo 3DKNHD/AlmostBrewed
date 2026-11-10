@@ -1,0 +1,14 @@
+{
+  "id": "02-equals",
+  "title": "Comparar textos",
+  "type": "quiz",
+  "question": "¿Cómo sabes si dos String tienen el mismo texto?",
+  "choices": [
+    "Con ==",
+    "Con equals",
+    "Con =",
+    "Con compare, que es una palabra de Java"
+  ],
+  "answer": 1,
+  "explain": "equals compara el contenido. == pregunta si las dos variables apuntan al mismo objeto. = es asignación, no comparación."
+}

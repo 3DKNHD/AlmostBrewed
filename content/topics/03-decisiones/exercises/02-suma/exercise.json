@@ -1,0 +1,6 @@
+{
+  "id": "03-suma",
+  "title": "Suma de 1 a n",
+  "type": "code",
+  "main": "SumaHasta"
+}

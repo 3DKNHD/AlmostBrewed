@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {
+      "stdin": "4\n9\n2\n",
+      "stdout": "9\n"
+    },
+    {
+      "stdin": "7\n7\n3\n",
+      "stdout": "7\n"
+    }
+  ]
+}

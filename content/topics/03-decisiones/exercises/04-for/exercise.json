@@ -1,0 +1,14 @@
+{
+  "id": "03-for",
+  "title": "for o while",
+  "type": "quiz",
+  "question": "Conoces de antemano cuántas vueltas dar. ¿Qué ciclo es el habitual?",
+  "choices": [
+    "while, porque ocupa menos",
+    "for",
+    "switch",
+    "if"
+  ],
+  "answer": 1,
+  "explain": "for declara el índice, la condición y el avance en la misma línea. while también puede, y es el que eliges cuando la salida depende de un dato, no de un conteo."
+}

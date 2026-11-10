@@ -1,0 +1,12 @@
+{
+  "id": "01-primer-programa",
+  "title": "Primer programa",
+  "summary": "JDK, main, compilar y correr.",
+  "track": "cero",
+  "objectives": [
+    "Decir qué hace javac y qué hace java.",
+    "Escribir un main que imprima texto.",
+    "Reconocer un error de sintaxis típico."
+  ],
+  "exampleWindow": false
+}

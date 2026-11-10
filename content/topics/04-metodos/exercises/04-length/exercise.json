@@ -1,0 +1,14 @@
+{
+  "id": "04-length",
+  "title": "length o length()",
+  "type": "quiz",
+  "question": "¿Cuál es la forma correcta?",
+  "choices": [
+    "datos.length() y palabra.length",
+    "datos.length y palabra.length()",
+    "los dos llevan paréntesis",
+    "ninguno lleva paréntesis"
+  ],
+  "answer": 1,
+  "explain": "En un arreglo length es un campo. En un String length es un método, así que lleva paréntesis."
+}

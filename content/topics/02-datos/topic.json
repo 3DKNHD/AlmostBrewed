@@ -1,0 +1,12 @@
+{
+  "id": "02-datos",
+  "title": "Datos",
+  "summary": "Tipos, variables, operadores y conversión.",
+  "track": "cero",
+  "objectives": [
+    "Elegir un tipo para un dato.",
+    "Distinguir la división entera de la real.",
+    "Comparar textos con equals."
+  ],
+  "exampleWindow": false
+}

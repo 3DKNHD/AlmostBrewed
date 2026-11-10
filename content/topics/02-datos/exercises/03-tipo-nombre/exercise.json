@@ -1,0 +1,14 @@
+{
+  "id": "02-tipo-nombre",
+  "title": "El tipo de un nombre",
+  "type": "quiz",
+  "question": "¿Qué tipo usas para el nombre de una persona?",
+  "choices": [
+    "int",
+    "String",
+    "char",
+    "boolean"
+  ],
+  "answer": 1,
+  "explain": "Un nombre es texto de varios caracteres. String es la clase del texto. char guarda un solo carácter."
+}

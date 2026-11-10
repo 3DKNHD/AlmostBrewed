@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {
+      "stdin": "59\n",
+      "stdout": "suspenso\n"
+    },
+    {
+      "stdin": "60\n",
+      "stdout": "aprobado\n"
+    }
+  ]
+}
