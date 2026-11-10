@@ -561,6 +561,7 @@ async function openTopic(folder) {
   state.topic = await api("/api/topic/" + folder);
   await refreshOutline();
   render();
+  window.scrollTo(0, 0);
 }
 
 function collectFiles(folder) {
