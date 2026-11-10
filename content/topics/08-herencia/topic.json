@@ -1,0 +1,12 @@
+{
+  "id": "08-herencia",
+  "title": "Herencia y polimorfismo",
+  "summary": "extends, super y despacho dinámico.",
+  "track": "poo",
+  "objectives": [
+    "Extender una clase y llamar a super.",
+    "Redefinir un método.",
+    "Ver que la variable y el objeto pueden ser de clases distintas."
+  ],
+  "exampleWindow": false
+}

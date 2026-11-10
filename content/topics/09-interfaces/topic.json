@@ -1,0 +1,12 @@
+{
+  "id": "09-interfaces",
+  "title": "Abstractas e interfaces",
+  "summary": "La diferencia que preguntan en el examen.",
+  "track": "poo",
+  "objectives": [
+    "Declarar una clase abstracta con un método sin cuerpo.",
+    "Declarar una interfaz e implementarla.",
+    "Implementar más de una interfaz."
+  ],
+  "exampleWindow": false
+}

@@ -1,0 +1,13 @@
+{
+  "classes": [
+    "Persona",
+    "Estudiante"
+  ],
+  "relations": [
+    {
+      "from": "Persona",
+      "to": "Estudiante",
+      "kind": "generalization"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "10-colecciones",
+  "title": "Colecciones, excepciones y ficheros",
+  "summary": "ArrayList, HashMap, try/catch y un archivo de texto.",
+  "track": "poo",
+  "objectives": [
+    "Guardar una cantidad variable de elementos.",
+    "Contar con un mapa.",
+    "Atrapar un dato mal formado y leer un archivo de texto."
+  ],
+  "exampleWindow": false
+}

@@ -1,0 +1,11 @@
+{
+  "id": "07-relaciones",
+  "title": "Relaciones en código",
+  "summary": "Del diagrama al campo y a la lista.",
+  "track": "poo",
+  "objectives": [
+    "Representar una asociación con una referencia.",
+    "Representar composición con una lista que la clase posee."
+  ],
+  "exampleWindow": false
+}

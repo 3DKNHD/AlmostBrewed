@@ -1,0 +1,13 @@
+{
+  "classes": [
+    "Biblioteca",
+    "Libro"
+  ],
+  "relations": [
+    {
+      "from": "Biblioteca",
+      "to": "Libro",
+      "kind": "composition"
+    }
+  ]
+}

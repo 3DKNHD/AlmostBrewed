@@ -1,0 +1,12 @@
+{
+  "id": "05-paradigma-uml",
+  "title": "Paradigma y UML",
+  "summary": "Clase, objeto y el diagrama que se pide en el examen.",
+  "track": "poo",
+  "objectives": [
+    "Usar el vocabulario de clase, objeto, atributo, método y mensaje.",
+    "Leer un diagrama de clases.",
+    "Distinguir asociación, agregación, composición, generalización y realización."
+  ],
+  "exampleWindow": false
+}

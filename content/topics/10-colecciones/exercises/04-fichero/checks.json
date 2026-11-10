@@ -1,0 +1,11 @@
+{
+  "cases": [
+    {
+      "stdin": "",
+      "stdout": "Java\n",
+      "files": {
+        "notas.txt": "Java\n"
+      }
+    }
+  ]
+}

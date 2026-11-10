@@ -1,0 +1,8 @@
+{
+  "cases": [
+    {
+      "stdin": "12 x\n",
+      "stdout": "12\nno es un numero\n"
+    }
+  ]
+}

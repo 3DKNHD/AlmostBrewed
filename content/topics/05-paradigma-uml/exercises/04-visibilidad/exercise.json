@@ -1,0 +1,14 @@
+{
+  "id": "05-visibilidad",
+  "title": "La raya del privado",
+  "type": "quiz",
+  "question": "En un diagrama de clases, ¿qué marca a un atributo privado?",
+  "choices": [
+    "+",
+    "-",
+    "#",
+    "*"
+  ],
+  "answer": 1,
+  "explain": "+ es público, - es privado, # es protegido. El asterisco es multiplicidad, no visibilidad."
+}

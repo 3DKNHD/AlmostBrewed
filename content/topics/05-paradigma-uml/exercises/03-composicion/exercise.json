@@ -1,0 +1,14 @@
+{
+  "id": "05-composicion",
+  "title": "Composición o agregación",
+  "type": "quiz",
+  "question": "Un aula contiene pupitres que se compraron para esa aula y no se usan fuera de ella. ¿Qué relación es, del aula hacia el pupitre?",
+  "choices": [
+    "Asociación",
+    "Agregación",
+    "Composición",
+    "Realización"
+  ],
+  "answer": 2,
+  "explain": "La composición ata la vida de la parte a la del todo. La agregación sería un grupo de profesores que existen aunque el aula cierre."
+}

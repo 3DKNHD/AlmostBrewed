@@ -1,0 +1,12 @@
+{
+  "id": "06-clases",
+  "title": "Clases y encapsulamiento",
+  "summary": "Privado, constructores, this, static.",
+  "track": "poo",
+  "objectives": [
+    "Esconder el estado y ofrecer operaciones.",
+    "Escribir constructores, incluida la sobrecarga.",
+    "Usar un campo static para contar objetos."
+  ],
+  "exampleWindow": false
+}

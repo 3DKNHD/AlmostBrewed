@@ -1,0 +1,8 @@
+{
+  "cases": [
+    {
+      "stdin": "3\nAna\n\nLuis\n",
+      "stdout": "Ana\nLuis\n"
+    }
+  ]
+}

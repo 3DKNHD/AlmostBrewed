@@ -1,0 +1,8 @@
+{
+  "cases": [
+    {
+      "stdin": "hola hola java\n",
+      "stdout": "2\n"
+    }
+  ]
+}

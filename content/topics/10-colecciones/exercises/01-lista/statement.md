@@ -1,0 +1,1 @@
+El primer entero es la cantidad de líneas. Después vienen esas líneas. Guarda en un `ArrayList` solo las que tengan texto e imprímelas en orden. La entrada de ejemplo es `3`, luego `Ana`, luego una línea vacía, luego `Luis`.

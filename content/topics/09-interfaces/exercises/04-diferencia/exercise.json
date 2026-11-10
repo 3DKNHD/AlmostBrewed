@@ -1,0 +1,14 @@
+{
+  "id": "09-diferencia",
+  "title": "Abstracta o interfaz",
+  "type": "quiz",
+  "question": "No hay campos que compartir y la clase ya extiende otra. Aun así debe cumplir un contrato. ¿Qué usas?",
+  "choices": [
+    "Otra clase abstracta",
+    "Una interfaz",
+    "Un método static",
+    "Una asociación"
+  ],
+  "answer": 1,
+  "explain": "Solo se extiende una clase. Las interfaces se implementan varias, y no exigen estado compartido. La clase abstracta es para la familia que sí comparte datos."
+}

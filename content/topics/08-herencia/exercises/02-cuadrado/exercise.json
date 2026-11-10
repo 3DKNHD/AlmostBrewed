@@ -1,0 +1,14 @@
+{
+  "id": "08-cuadrado",
+  "title": "El cuadrado y el rectángulo",
+  "type": "quiz",
+  "question": "Un rectángulo tiene setAncho y setAlto por separado. ¿Conviene que Cuadrado herede de Rectángulo?",
+  "choices": [
+    "Sí, porque un cuadrado es un rectángulo",
+    "No, porque un setter del padre puede romper el cuadrado",
+    "Sí, si el cuadrado pone los dos setters en private",
+    "Solo si se usa protected"
+  ],
+  "answer": 1,
+  "explain": "Heredar publica el contrato del padre. Si el rectángulo deja cambiar un solo lado, un cuadrado guardado en una variable Rectangulo deja de tener los lados iguales. La herencia no es solo para reutilizar campos."
+}
