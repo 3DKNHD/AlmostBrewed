@@ -1,7 +1,7 @@
 {
-  "title": "CasiCompila",
-  "slug": "casi-compila",
-  "tagline": "Java desde cero. El punto y coma lo pones tú.",
+  "title": "AlmostBrewed",
+  "slug": "almost-brewed",
+  "tagline": "El café casi listo y el programa que casi compila.",
   "tracks": [
     {"id": "cero", "title": "Java desde cero"},
     {"id": "poo", "title": "Programación 2"},
