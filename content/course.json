@@ -1,0 +1,10 @@
+{
+  "title": "CasiCompila",
+  "slug": "casi-compila",
+  "tagline": "Java desde cero. El punto y coma lo pones tú.",
+  "tracks": [
+    {"id": "cero", "title": "Java desde cero"},
+    {"id": "poo", "title": "Programación 2"},
+    {"id": "exam", "title": "Simulacros"}
+  ]
+}
