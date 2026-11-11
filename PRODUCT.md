@@ -20,7 +20,7 @@ Los ejercicios de consola se comprueban solos. Los de ventana se abren en el esc
 
 ## Operating Context
 
-Se arranca con `./iniciar.sh` y se abre en `http://127.0.0.1:8765/` en este equipo. Hace falta Python 3 y un JDK para compilar. La teoría y los diagramas se leen aunque no haya compilador. Una sola persona, en una sola máquina, a menudo con la guía y el editor en la misma vista.
+Se arranca con `./start.sh` y se abre en `http://127.0.0.1:8765/` en este equipo. Otro dispositivo de la misma red entra por la dirección que imprime la terminal. Hace falta Python 3 y un JDK para compilar. La teoría y los diagramas se leen aunque no haya compilador. Una sola persona, en una sola máquina, a menudo con la guía y el editor en la misma vista.
 
 ## Capabilities and Constraints
 

@@ -9,10 +9,10 @@ El nombre que se ve en la página está en `content/course.json` (`title`, `slug
 Hace falta Python 3 y un JDK (`javac` y `java`).
 
 ```sh
-./iniciar.sh
+./start.sh
 ```
 
-Abre `http://127.0.0.1:8765/` en este equipo. Para apagarla, cierra esa terminal. La teoría y los diagramas se leen aunque no compiles. Las ventanas Swing se abren en el escritorio.
+Abre `http://127.0.0.1:8765/` en este equipo. La terminal también imprime una dirección `http://…:8765/` para abrirla desde otro dispositivo de la misma red. Para apagarla, cierra esa terminal. La teoría y los diagramas se leen aunque no compiles. Las ventanas Swing se abren en el escritorio donde corre el servidor.
 
 El avance queda en `data/progress.json` y no se versiona. Los borradores del editor quedan en el navegador.
 

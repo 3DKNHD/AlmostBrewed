@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Local course server. Standard library only. Binds to 127.0.0.1."""
+"""Local course server. Standard library only. Listens on the local network."""
 
+import fcntl
 import json
 import os
+import socket
+import struct
 import sys
 import threading
 import webbrowser
@@ -144,12 +147,76 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
 
+VIRTUAL_IFACES = ("lo", "docker", "br-", "veth", "virbr", "tun", "tap", "wg", "proton", "tailscale", "zt", "ppp")
+
+
+def virtual_iface(name):
+    return name == "lo" or name.startswith(VIRTUAL_IFACES)
+
+
+def iface_ipv4(name):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        packed = fcntl.ioctl(sock.fileno(), 0x8915, struct.pack("256s", name.encode("utf-8")[:15]))
+    except OSError:
+        return ""
+    finally:
+        sock.close()
+    return socket.inet_ntoa(packed[20:24])
+
+
+def default_lan_iface():
+    candidates = []
+    try:
+        lines = open("/proc/net/route", encoding="ascii").read().splitlines()[1:]
+    except OSError:
+        return ""
+    for line in lines:
+        parts = line.split()
+        if len(parts) < 7 or parts[1] != "00000000" or virtual_iface(parts[0]):
+            continue
+        candidates.append((int(parts[6]), parts[0]))
+    if not candidates:
+        return ""
+    candidates.sort()
+    return candidates[0][1]
+
+
+def lan_ip():
+    preferred = default_lan_iface()
+    if preferred:
+        ip = iface_ipv4(preferred)
+        if ip and not ip.startswith("127."):
+            return ip
+    try:
+        names = os.listdir("/sys/class/net")
+    except OSError:
+        return ""
+    names.sort(key=lambda name: (0 if name.startswith(("w", "e")) else 1, name))
+    for name in names:
+        if virtual_iface(name):
+            continue
+        ip = iface_ipv4(name)
+        if ip and not ip.startswith(("127.", "169.254.")):
+            return ip
+    return ""
+
+
+def lan_urls(port):
+    ip = lan_ip()
+    if not ip:
+        return []
+    return ["http://%s:%s/" % (ip, port)]
+
+
 def main():
-    server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    url = "http://127.0.0.1:%s/" % PORT
-    print(url, flush=True)
+    server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
+    local = "http://127.0.0.1:%s/" % PORT
+    print("En este equipo: %s" % local, flush=True)
+    for url in lan_urls(PORT):
+        print("En la red: %s" % url, flush=True)
     if os.environ.get("NO_BROWSER") != "1":
-        threading.Timer(0.4, lambda: webbrowser.open(url)).start()
+        threading.Timer(0.4, lambda: webbrowser.open(local)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
