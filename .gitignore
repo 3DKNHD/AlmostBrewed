@@ -2,4 +2,3 @@ data/progress.json
 __pycache__/
 *.pyc
 *.class
-.cursor/
